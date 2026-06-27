@@ -1,0 +1,42 @@
+# AI Job Application Automation System Configuration
+
+# Matching thresholds
+minimum_match_score: 60
+duplicate_similarity_threshold: 0.95
+
+# AI Model settings
+model:
+  provider: "gemini"  # Options: gemini, openai, ollama
+  api_key: "${GEMINI_API_KEY}"
+  model_name: "gemini-2.0-flash"
+  temperature: 0.3
+  max_tokens: 4096
+
+# Output generation settings
+generation:
+  generate_pdf: true
+  generate_docx: true
+  compile_latex: true
+  max_workers: 4
+
+# File paths
+paths:
+  input_excel: "input/jobs.xlsx"
+  output_excel: "output/Job_Matching_Updated.xlsx"
+  profile_dir: "profile"
+  templates_dir: "templates"
+  generated_dir: "generated"
+  log_file: "generated/Logs/generation.log"
+
+# ATS optimization settings
+ats:
+  target_score: 90
+  keyword_density_max: 0.08  # Maximum 8% keyword density
+  max_resume_pages: 1
+
+# User profile (loaded from JSON files)
+profile_files:
+  resume: "profile/master_resume.json"
+  experience: "profile/experience.json"
+  skills: "profile/skills.json"
+  projects: "profile/projects.json"

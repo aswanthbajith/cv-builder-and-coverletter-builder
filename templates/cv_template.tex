@@ -1,0 +1,74 @@
+\documentclass[11pt,a4paper]{article}
+
+% ATS-friendly packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.6in]{geometry}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+% Section formatting
+\titleformat{\section}{\large\bfseries\uppercase}{\thesection}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{10pt}{6pt}
+
+\newcommand{\jobtitle}[4]{%
+    \textbf{#1} \hfill \textit{#2}\\
+    \textit{#3} \hfill #4
+}
+
+\begin{document}
+
+% Header
+\begin{center}
+    {\LARGE\bfseries {{ name }}}\\[6pt]
+    {% for key, value in contact.items() %}{{ value }}{% if not loop.last %} | {% endif %}{% endfor %}
+\end{center}
+
+% Professional Summary
+\section{Professional Summary}
+{{ summary }}
+
+% Technical Skills
+\section{Technical Skills}
+{% for skill in skills %}{{ skill }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+% Experience
+\section{Professional Experience}
+{% for exp in experience %}
+\jobtitle{ {{ exp.title }} }{ {{ exp.location }} }{ {{ exp.company }} }{ {{ exp.period }} }
+\begin{itemize}[leftmargin=*,nosep,topsep=3pt]
+    {% for bullet in exp.description %}
+    \item {{ bullet }}
+    {% endfor %}
+\end{itemize}
+{% endfor %}
+
+% Education
+\section{Education}
+{% for edu in education %}
+\textbf{ {{ edu.degree }} } \hfill {{ edu.period }}\\
+{{ edu.institution }} \hfill {{ edu.grade }}
+{% endfor %}
+
+% Projects
+\section{Key Projects}
+{% for project in projects %}
+\textbf{ {{ project.name }} }\\
+{{ project.description }}
+{% endfor %}
+
+% Research Interests
+\section{Research Interests}
+{% for interest in research_interests %}{{ interest }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+% Languages
+\section{Languages}
+{% for lang in languages %}{{ lang.language }} ({{ lang.proficiency }}){% if not loop.last %}, {% endif %}{% endfor %}
+
+\end{document}

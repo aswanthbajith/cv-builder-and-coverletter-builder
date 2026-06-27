@@ -1,0 +1,106 @@
+{
+  "name": "Aswanth Bindu Ajith",
+  "current_role": "Master's Student in High Performance Computing and Quantum Computing",
+  "contact": {
+    "email": "aswanth.bindu-ajith@stud.th-deg.de",
+    "phone": "+4917641539896",
+    "location": "Deggendorf, Germany",
+    "linkedin": "LinkedIn"
+  },
+  "professional_summary": "Highly motivated interdisciplinary M.Sc. candidate combining a Mechanical Engineering foundation with advanced expertise in data science, machine learning, and scientific computing. Passionate about applying ML models and data-driven decision-making to real industrial manufacturing processes to optimize process parameters, cycle times, and product quality. Backed by practical Agile software development experience and proficiency in Python and PyTorch.",
+  "education": [
+    {
+      "degree": "M.Sc. High Performance Computing and Quantum Computing",
+      "institution": "Deggendorf Institute of Technology (DIT), Germany",
+      "period": "2024–Present",
+      "grade": "Current Average: 2.6",
+      "highlights": [
+        "Optimization Methods (1.7)",
+        "System Design & Applications (1.7)",
+        "Software Engineering (2.3)",
+        "Advanced Mathematics (2.3)"
+      ]
+    },
+    {
+      "degree": "B.Tech Mechanical Engineering",
+      "institution": "APJ Abdul Kalam Technological University, India",
+      "period": "2019–2023",
+      "grade": "CGPA: 6.48",
+      "coursework": [
+        "Applied Mathematics",
+        "Engineering Mechanics",
+        "Computational Thermodynamics",
+        "Heat Transfer",
+        "Control Systems"
+      ]
+    }
+  ],
+  "technical_skills": [
+    "Python (Advanced)",
+    "C/C++",
+    "JavaScript",
+    "HTML/CSS",
+    "Bash",
+    "PyTorch",
+    "Scikit-Learn",
+    "NumPy",
+    "Pandas",
+    "SciPy",
+    "Matplotlib",
+    "Jupyter Notebook",
+    "Git/GitHub",
+    "Linux",
+    "LaTeX",
+    "Agile Methodologies",
+    "Optimization Methods",
+    "Computational Modeling",
+    "Numerical Analysis",
+    "Machine Learning",
+    "Scientific Computing"
+  ],
+  "experience": [
+    {
+      "title": "Working Student Software Developer",
+      "company": "No Border (E-commerce)",
+      "location": "Germany",
+      "period": "Feb 2025 – Dec 2025",
+      "description": [
+        "Contributed to software development projects within an Agile environment, delivering practical solutions while significantly enhancing Python programming skills",
+        "Collaborated effectively within multidisciplinary teams to implement frontend features, demonstrating high adaptability and attention to detail",
+        "Supported comprehensive testing and debugging workflows, refining a structured approach to solving challenging technical problems",
+        "Utilized Git, GitHub, and Linux for version control and development workflows"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Large-Scale Computational Simulation & Data Analysis",
+      "description": "Developed a Python-based computational simulation to process complex datasets and model interactions among approximately 30,000 system entities. Utilized NumPy and Pandas to extract trends, evaluate data, and identify hidden relationships. Transformed complex numerical data into practical insights and structured scientific reports.",
+      "technologies": ["Python", "NumPy", "Pandas", "Data Analysis"]
+    },
+    {
+      "name": "Computing Architecture & Optimization Methods",
+      "description": "Applied mathematical optimization methods and scientific computing workflows to evaluate computational efficiency of modern architectures. Developed structured analytical approaches to identify computational bottlenecks.",
+      "technologies": ["Optimization", "Scientific Computing", "Performance Analysis"]
+    },
+    {
+      "name": "Thermal Analysis of Battery Modules",
+      "description": "Conducted extensive engineering simulations to evaluate process behavior and thermal dynamics in high-dimensional physical systems. Applied mechanical engineering problem-solving to understand impact of operational parameters on product quality.",
+      "technologies": ["Thermodynamics", "Simulation", "Heat Transfer"]
+    }
+  ],
+  "languages": [
+    {"language": "English", "proficiency": "Professional Working Proficiency"},
+    {"language": "Malayalam", "proficiency": "Native"},
+    {"language": "German", "proficiency": "A1 (Beginner)"}
+  ],
+  "certifications": [],
+  "research_interests": [
+    "High Performance Computing",
+    "Quantum Computing",
+    "Scientific Machine Learning",
+    "Parallel and Distributed Systems",
+    "Computational Engineering",
+    "Performance Optimization"
+  ]
+}

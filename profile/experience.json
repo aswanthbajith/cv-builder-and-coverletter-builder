@@ -1,0 +1,17 @@
+{
+  "experience": [
+    {
+      "title": "Working Student Software Developer",
+      "company": "No Border (E-commerce)",
+      "location": "Germany",
+      "period": "Feb 2025 – Dec 2025",
+      "highlight": "gained practical experience in Agile software development, contributing to frontend features, testing, and debugging while utilizing Git, GitHub, and Linux workflows.",
+      "description": [
+        "Contributed to software development projects within an Agile environment, delivering practical solutions while significantly enhancing Python programming skills",
+        "Collaborated effectively within multidisciplinary teams to implement frontend features, demonstrating high adaptability and attention to detail",
+        "Supported comprehensive testing and debugging workflows, refining a structured approach to solving challenging technical problems",
+        "Utilized Git, GitHub, and Linux for version control and development workflows"
+      ]
+    }
+  ]
+}

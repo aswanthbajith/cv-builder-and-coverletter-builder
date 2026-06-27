@@ -1,0 +1,19 @@
+{
+  "projects": [
+    {
+      "name": "Large-Scale Computational Simulation & Data Analysis",
+      "description": "Developed a Python-based computational simulation to process complex datasets and model interactions among approximately 30,000 system entities. Utilized NumPy and Pandas to extract trends, evaluate data, and identify hidden relationships. Transformed complex numerical data into practical insights and structured scientific reports.",
+      "technologies": ["Python", "NumPy", "Pandas", "Data Analysis"]
+    },
+    {
+      "name": "Computing Architecture & Optimization Methods",
+      "description": "Applied mathematical optimization methods and scientific computing workflows to evaluate computational efficiency of modern architectures. Developed structured analytical approaches to identify computational bottlenecks.",
+      "technologies": ["Optimization", "Scientific Computing", "Performance Analysis"]
+    },
+    {
+      "name": "Thermal Analysis of Battery Modules",
+      "description": "Conducted extensive engineering simulations to evaluate process behavior and thermal dynamics in high-dimensional physical systems. Applied mechanical engineering problem-solving to understand impact of operational parameters on product quality.",
+      "technologies": ["Thermodynamics", "Simulation", "Heat Transfer"]
+    }
+  ]
+}
