@@ -1,0 +1,33 @@
+[
+  {
+    "id": "course_quantum_001",
+    "source": "coursework",
+    "source_ref": "course_quantum",
+    "title": "Quantum Algorithms coursework (Qiskit, VQE)",
+    "action_verb": "Studied",
+    "context": "Completed a Master's-level Quantum Algorithms module covering foundational algorithms and variational methods.",
+    "details": "Studied Deutsch–Jozsa, Grover, Shor, and the variational quantum eigensolver (VQE). Implemented small Qiskit circuits for the textbook examples as part of the graded exercises.",
+    "outcome": "Top grade in the Quantum Algorithms module.",
+    "technologies": ["Python", "Qiskit"],
+    "skills": ["quantum algorithms", "quantum computing fundamentals"],
+    "domain_tags": ["quantum computing"],
+    "role_family_tags": ["quantum", "research"],
+    "seniority": "junior"
+  },
+  {
+    "id": "course_quantum_002",
+    "source": "coursework",
+    "source_ref": "course_quantum",
+    "title": "Variational quantum eigensolver exercise",
+    "action_verb": "Implemented",
+    "context": "Implemented a small VQE-style circuit in Qiskit for a 2-qubit Hamiltonian as part of the Quantum Algorithms coursework.",
+    "details": "Used a parameterized ansatz, ran the circuit on a simulator backend, and computed the expectation value. Compared to the analytical ground-state energy of the chosen Hamiltonian.",
+    "outcome": "Recovered the analytical ground-state energy to within 1% on the 2-qubit test case.",
+    "technologies": ["Python", "Qiskit"],
+    "skills": ["quantum simulation", "VQE", "Hamiltonian expectation"],
+    "metrics": ["within 1% of analytical ground state"],
+    "domain_tags": ["quantum computing"],
+    "role_family_tags": ["quantum", "research"],
+    "seniority": "junior"
+  }
+]

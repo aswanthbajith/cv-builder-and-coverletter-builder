@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "description": "Index of atomic experience files for the M2 knowledge graph. Each entry points to a JSON file containing a list[AtomicExperience]. Loaded by scripts/build_knowledge_index.py and job_automation.knowledge.graph.KnowledgeGraph.",
+  "categories": [
+    {"path": "atomic/projects/lsim.json", "source": "project", "source_ref": "proj_lsim"},
+    {"path": "atomic/projects/comp_arch.json", "source": "project", "source_ref": "proj_comp_arch"},
+    {"path": "atomic/projects/thermal_battery.json", "source": "project", "source_ref": "proj_thermal_battery"},
+    {"path": "atomic/work/no_border.json", "source": "work", "source_ref": "work_no_border"},
+    {"path": "atomic/cross_cutting/tools.json", "source": "coursework", "source_ref": "cross_tools"},
+    {"path": "atomic/coursework/quantum.json", "source": "coursework", "source_ref": "course_quantum"}
+  ]
+}
