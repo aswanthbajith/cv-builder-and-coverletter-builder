@@ -5,6 +5,7 @@
       "company": "No Border (E-commerce)",
       "location": "Germany",
       "period": "Feb 2025 – Present",
+      "source_ref_marker": "work_no_border",
       "description": [
         "Shipped 5+ frontend features in a 2-week sprint cycle, reducing average ticket age by 30%",
         "Debugged and resolved 20+ production bugs across the React/Vue stack, cutting reported error rates by 25%",

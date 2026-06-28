@@ -70,6 +70,10 @@ exclude = [
     "src/main.py",
 ]
 
+# Ship py.typed so mypy treats our installed package as typed (PEP 561).
+[tool.hatch.build.targets.wheel.force-include]
+"src/job_automation/py.typed" = "job_automation/py.typed"
+
 # ──────────────────────────────────────────────────────────────────────
 # Tool configuration
 # ──────────────────────────────────────────────────────────────────────
@@ -119,6 +123,10 @@ select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF", "N", "TCH"]
 ignore = [
     "E501",  # line length handled by formatter
     "B008",  # function calls in defaults — Pydantic uses these for validators
+    "TC001", # application imports used only for type hints
+    "TC003", # stdlib imports used only for type hints
+    "RUF012", # mutable class attributes are intentional in logging formatters
+    "B039",  # ContextVar default={} is safe inside a controlled logger module
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -129,6 +137,7 @@ known-first-party = ["job_automation"]
 
 [tool.mypy]
 python_version = "3.11"
+mypy_path = "src"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -139,9 +148,21 @@ no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unreachable = true
+explicit_package_bases = true
 
 [[tool.mypy.overrides]]
-module = ["job_automation._legacy_*"]
+# Legacy engines from src/ that aren't part of the installed package.
+module = [
+    "src.config",
+    "src.excel_loader",
+    "src.deduplicator",
+    "src.matcher",
+    "src.resume_generator",
+    "src.cover_letter_generator",
+    "src.latex_compiler",
+    "src.excel_updater",
+    "src.main",
+]
 ignore_missing_imports = true
 ignore_errors = true
 
@@ -153,5 +174,6 @@ module = [
     "rapidfuzz.*",
     "docx.*",
     "pylatex.*",
+    "pandas.*",
 ]
 ignore_missing_imports = true

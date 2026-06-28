@@ -34,6 +34,19 @@ ats:
   keyword_density_max: 0.08  # Maximum 8% keyword density
   max_resume_pages: 1
 
+# Resume engine selector — "legacy" runs the M0 keyword-edit pipeline,
+# "v2" runs the M2 knowledge-graph construction pipeline.
+resume_engine: "v2"
+
+# Critic loop tuning
+critic:
+  max_iterations: 2  # Max rewrite→critic iterations before best-effort ship
+
+# Web research knobs (used by CompanyResearcher)
+web:
+  research_timeout_s: 10
+  cache_max_age_days: 30
+
 # User profile (loaded from JSON files)
 profile_files:
   resume: "profile/master_resume.json"
