@@ -65,6 +65,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="Override the input Excel path (defaults to config.yaml).",
     )
+    parser.add_argument(
+        "--no-embeddings",
+        action="store_true",
+        help=(
+            "Skip loading the FAISS embedding index (faster startup, "
+            "keyword-only retrieval). Default is to load the index."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -124,7 +132,7 @@ def _run_v2(args: argparse.Namespace, cfg: object) -> int:
     logger.info("v2_pipeline_start", extra={"jobs": len(jobs), "dry_run": args.dry_run})
 
     profile = load_profile(getattr(cfg, "paths", None))
-    graph = load_knowledge_graph()
+    graph = load_knowledge_graph(with_embeddings=not args.no_embeddings)
     llm = GeminiClient()  # reads GEMINI_API_KEY from env
     pipeline = build_default_pipeline(llm)
 

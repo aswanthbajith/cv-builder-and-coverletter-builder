@@ -108,7 +108,7 @@ class KnowledgeGraph:
 def load_knowledge_graph(
     paths: PathsConfig | None = None,
     *,
-    with_embeddings: bool = False,
+    with_embeddings: bool = True,
 ) -> KnowledgeGraph:
     """Read ``profile/atomic/index.json`` and return a :class:`KnowledgeGraph`.
 
