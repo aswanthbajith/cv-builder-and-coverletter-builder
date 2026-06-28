@@ -9,10 +9,10 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Any, List
 
-# Add src to path
+# Add src to path for legacy engines during the M1 → M3 migration window.
 sys.path.insert(0, str(Path(__file__).parent))
 
-from config import config
+from job_automation.config import load_config
 from excel_loader import ExcelLoader
 from deduplicator import Deduplicator
 from matcher import JobMatcher
@@ -22,9 +22,9 @@ from cover_letter_generator import CoverLetterGenerator
 
 def setup_logging() -> logging.Logger:
     """Configure structured logging."""
-    log_path = Path(config.get('paths.log_file', 'generated/Logs/generation.log'))
+    log_path = Path(load_config().paths.log_file)
     log_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
@@ -33,7 +33,7 @@ def setup_logging() -> logging.Logger:
             logging.StreamHandler(sys.stdout)
         ]
     )
-    
+
     return logging.getLogger('JobAutomation')
 
 
@@ -133,7 +133,7 @@ def main():
     
     # Step 3: Load profile
     logger.info("Step 3: Loading candidate profile")
-    profile_path = Path(config.get('paths.profile_dir', 'profile'))
+    profile_path = Path(load_config().paths.profile_dir)
     profile = {}
     
     for file_name in ['master_resume.json', 'experience.json', 'skills.json', 'projects.json']:
@@ -159,7 +159,7 @@ def main():
     for i, job in enumerate(jobs_list):
         job['_df_index'] = i
     
-    max_workers = config.get('generation.max_workers', 4)
+    max_workers = load_config().generation.max_workers
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [
             executor.submit(process_job, job, profile, matcher, resume_gen, cover_gen, logger)

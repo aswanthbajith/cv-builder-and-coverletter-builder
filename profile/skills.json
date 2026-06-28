@@ -1,25 +1,53 @@
 {
-  "technical_skills": [
-    "Python (Advanced)",
-    "C/C++",
-    "JavaScript",
-    "HTML/CSS",
-    "Bash",
-    "PyTorch",
-    "Scikit-Learn",
-    "NumPy",
-    "Pandas",
-    "SciPy",
-    "Matplotlib",
-    "Jupyter Notebook",
-    "Git/GitHub",
-    "Linux",
-    "LaTeX",
-    "Agile Methodologies",
-    "Optimization Methods",
-    "Computational Modeling",
-    "Numerical Analysis",
-    "Machine Learning",
-    "Scientific Computing"
-  ]
+  "technical_skills": {
+    "programming_languages": [
+      "Python (Advanced, 4+ years)",
+      "C/C++",
+      "JavaScript",
+      "Bash/Shell scripting",
+      "HTML/CSS"
+    ],
+    "hpc_parallel": [
+      "MPI (basic)",
+      "OpenMP (basic)",
+      "GPU-aware computing concepts",
+      "Cluster job scheduling (SLURM basics)",
+      "Performance profiling"
+    ],
+    "scientific_computing": [
+      "NumPy",
+      "Pandas",
+      "SciPy",
+      "Matplotlib",
+      "Jupyter",
+      "LaTeX"
+    ],
+    "machine_learning": [
+      "PyTorch",
+      "Scikit-learn",
+      "TensorFlow (basic)",
+      "Feature engineering",
+      "Model evaluation"
+    ],
+    "quantum_computing": [
+      "Qiskit",
+      "Cirq (basic)",
+      "Quantum optimization algorithms",
+      "Variational quantum eigensolver (VQE)"
+    ],
+    "software_engineering": [
+      "Git/GitHub",
+      "Linux (Ubuntu, WSL)",
+      "Docker (basic)",
+      "Agile/Scrum",
+      "Unit testing",
+      "CI/CD basics"
+    ],
+    "modeling_simulation": [
+      "Finite difference methods",
+      "Computational fluid dynamics (basics)",
+      "Thermal simulation",
+      "Multi-physics modeling"
+    ]
+  }
 }

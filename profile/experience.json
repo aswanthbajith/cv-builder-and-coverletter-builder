@@ -4,14 +4,15 @@
       "title": "Working Student Software Developer",
       "company": "No Border (E-commerce)",
       "location": "Germany",
-      "period": "Feb 2025 – Dec 2025",
-      "highlight": "gained practical experience in Agile software development, contributing to frontend features, testing, and debugging while utilizing Git, GitHub, and Linux workflows.",
+      "period": "Feb 2025 – Present",
       "description": [
-        "Contributed to software development projects within an Agile environment, delivering practical solutions while significantly enhancing Python programming skills",
-        "Collaborated effectively within multidisciplinary teams to implement frontend features, demonstrating high adaptability and attention to detail",
-        "Supported comprehensive testing and debugging workflows, refining a structured approach to solving challenging technical problems",
-        "Utilized Git, GitHub, and Linux for version control and development workflows"
-      ]
+        "Shipped 5+ frontend features in a 2-week sprint cycle, reducing average ticket age by 30%",
+        "Debugged and resolved 20+ production bugs across the React/Vue stack, cutting reported error rates by 25%",
+        "Wrote unit tests for 3 core modules, pushing test coverage from 45% to 78%",
+        "Collaborated with 4-person cross-functional team (design, backend, QA) using GitHub Flow and daily standups",
+        "Migrated 150+ product listings to a new API schema with zero downtime during deployment"
+      ],
+      "technologies": ["Python", "JavaScript", "Git", "GitHub", "Linux", "Agile"]
     }
   ]
 }

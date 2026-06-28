@@ -5,10 +5,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-try:
-    from .config import config
-except ImportError:
-    from config import config
+from job_automation.config import load_config
 
 logger = logging.getLogger(__name__)
 

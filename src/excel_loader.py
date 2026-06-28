@@ -4,10 +4,8 @@ import logging
 import pandas as pd
 from pathlib import Path
 from typing import Optional, List
-try:
-    from .config import config
-except ImportError:
-    from config import config
+
+from job_automation.config import load_config
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +32,7 @@ class ExcelLoader:
     }
     
     def __init__(self, file_path: Optional[str] = None):
-        self.file_path = file_path or config.get('paths.input_excel')
+        self.file_path = file_path or str(load_config().paths.input_excel)
         self.df: Optional[pd.DataFrame] = None
     
     def load(self) -> pd.DataFrame:
@@ -81,7 +79,7 @@ class ExcelLoader:
     
     def save(self, df: pd.DataFrame, output_path: Optional[str] = None) -> None:
         """Save DataFrame to Excel with hyperlinks."""
-        output_path = output_path or config.get('paths.output_excel')
+        output_path = output_path or str(load_config().paths.output_excel)
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         
         # Create hyperlinks for generated files

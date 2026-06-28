@@ -12,19 +12,28 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy requirements first for layer caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy project metadata first for layer caching of the dependency install.
+COPY pyproject.toml README.md ./
+# Copy only the package directory — the legacy src/ engines are excluded
+# from the wheel build (see pyproject.toml [tool.hatch.build.targets.wheel]).
+COPY src/job_automation ./src/job_automation
 
-# Copy application code
-COPY . .
+# Install the package in editable mode so the `job-automation` console
+# script and the `job_automation` import path are available everywhere.
+RUN pip install --no-cache-dir -e .
+
+# Copy the remaining sources (legacy engines, configs, profile, etc.) used
+# by the migration shim.
+COPY src/ ./src/
+COPY config.yaml profile/ templates/ input/ ./
 
 # Create necessary directories
 RUN mkdir -p input profile templates generated output
 
-# Set environment variables
-ENV PYTHONPATH=/app/src
-ENV CONFIG_PATH=/app/config.yaml
+# Set environment variables. JOB_AUTO_LOGGING__FORMAT=json switches the
+# logger to JSON output for production log shipping.
+ENV JOB_AUTO_LOGGING__FORMAT=json
 
-# Run the application
-CMD ["python", "src/main.py"]
+# Run via the installed console script. M3 will swap this for the Celery
+# worker entry point.
+CMD ["job-automation"]

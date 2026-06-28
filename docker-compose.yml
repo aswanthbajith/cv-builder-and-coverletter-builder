@@ -14,4 +14,8 @@ services:
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    command: python src/main.py
+      # Production logging: JSON for log shipping.
+      - JOB_AUTO_LOGGING__FORMAT=json
+      # Override any path or threshold without rebuilding the image.
+      - JOB_AUTO_GENERATION__MAX_WORKERS=${JOB_AUTO_MAX_WORKERS:-4}
+    command: job-automation

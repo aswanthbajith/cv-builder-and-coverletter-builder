@@ -5,19 +5,17 @@ import numpy as np
 import pandas as pd
 from rapidfuzz import fuzz
 from typing import List, Tuple
-try:
-    from .config import config
-except ImportError:
-    from config import config
+
+from job_automation.config import load_config
 
 logger = logging.getLogger(__name__)
 
 
 class Deduplicator:
     """Detect and mark duplicate job postings."""
-    
+
     def __init__(self):
-        self.similarity_threshold = config.get('duplicate_similarity_threshold', 0.95)
+        self.similarity_threshold = load_config().matching.duplicate_similarity_threshold
         self.model = None
         self._load_model()
     

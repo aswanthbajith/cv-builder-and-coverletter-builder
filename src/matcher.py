@@ -5,10 +5,8 @@ import json
 import re
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
-try:
-    from .config import config
-except ImportError:
-    from config import config
+
+from job_automation.config import load_config
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +28,7 @@ class MatchResult:
 
 class JobMatcher:
     """Analyze job suitability against candidate profile."""
-    
+
     # Keyword mappings for scoring
     SKILL_KEYWORDS = {
         'python': ['python', 'pandas', 'numpy', 'scipy', 'matplotlib', 'jupyter'],
@@ -40,16 +38,16 @@ class JobMatcher:
         'cloud': ['cloud', 'aws', 'azure', 'gcp', 'kubernetes', 'docker'],
         'scientific_computing': ['scientific computing', 'numerical', 'simulation', 'computational'],
     }
-    
+
     def __init__(self):
-        self.minimum_score = config.get('minimum_match_score', 60)
+        self.minimum_score = load_config().matching.minimum_match_score
         self.profile = self._load_profile()
     
     def _load_profile(self) -> Dict[str, Any]:
         """Load candidate profile from JSON files."""
         from pathlib import Path
-        
-        profile_dir = Path(config.get('paths.profile_dir', 'profile'))
+
+        profile_dir = Path(load_config().paths.profile_dir)
         profile = {}
         
         for file_name in ['master_resume.json', 'experience.json', 'skills.json', 'projects.json']:

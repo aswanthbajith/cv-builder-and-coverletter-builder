@@ -5,10 +5,7 @@ from pathlib import Path
 from typing import Optional
 import pandas as pd
 
-try:
-    from .config import config
-except ImportError:
-    from config import config
+from job_automation.config import load_config
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +14,7 @@ class ExcelUpdater:
     """Update Excel files with generation results and hyperlinks."""
 
     def __init__(self, output_path: Optional[str] = None):
-        self.output_path = output_path or config.get('paths.output_excel', 'output/Job_Matching_Updated.xlsx')
+        self.output_path = output_path or str(load_config().paths.output_excel)
 
     def update(self, df: pd.DataFrame) -> None:
         """Save DataFrame with hyperlinks and formatting."""
