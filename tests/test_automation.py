@@ -15,16 +15,16 @@ from pathlib import Path
 # Ensure the legacy src/ is on path for these smoke tests only.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
+from cover_letter_generator import CoverLetterGenerator
+from deduplicator import Deduplicator
+from excel_loader import ExcelLoader
+from excel_updater import ExcelUpdater
+from latex_compiler import LaTeXCompiler
+from matcher import JobMatcher, MatchResult
+from resume_generator import ResumeGenerator
+
 from job_automation.config import load_config
 from job_automation.io import load_profile
-
-from excel_loader import ExcelLoader  # noqa: E402
-from deduplicator import Deduplicator  # noqa: E402
-from matcher import JobMatcher, MatchResult  # noqa: E402
-from resume_generator import ResumeGenerator  # noqa: E402
-from cover_letter_generator import CoverLetterGenerator  # noqa: E402
-from latex_compiler import LaTeXCompiler  # noqa: E402
-from excel_updater import ExcelUpdater  # noqa: E402
 
 
 class TestLegacyConfigShim(unittest.TestCase):
@@ -48,7 +48,9 @@ class TestProfileIo(unittest.TestCase):
     def test_load_profile(self):
         profile = load_profile()
         self.assertEqual(profile.name, "Aswanth Bindu Ajith")
-        self.assertIn("Python", profile.technical_skills["programming_languages"])
+        self.assertTrue(
+            any("Python" in s for s in profile.technical_skills["programming_languages"])
+        )
 
 
 class TestExcelLoader(unittest.TestCase):

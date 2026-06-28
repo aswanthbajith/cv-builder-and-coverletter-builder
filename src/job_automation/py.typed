@@ -1,0 +1,6 @@
+"""PEP 561 marker — declares the package ships inline type information.
+
+Without this file, mypy treats installed subpackages as third-party and
+silently skips them, falling back to Any. Adding this single empty marker
+makes mypy analyze our package against its own type hints.
+"""

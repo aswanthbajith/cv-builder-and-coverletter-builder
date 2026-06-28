@@ -71,6 +71,28 @@ class AtsConfig(BaseModel):
     max_resume_pages: int = Field(default=1, ge=1, le=4)
 
 
+class CriticConfig(BaseModel):
+    """Critic loop tuning for the M2 pipeline."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    max_iterations: int = Field(
+        default=2,
+        ge=1,
+        le=5,
+        description="Maximum rewrite→critic iterations. Higher = more polish, more cost.",
+    )
+
+
+class WebConfig(BaseModel):
+    """Web research knobs used by ``CompanyResearcher``."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    research_timeout_s: float = Field(default=10.0, gt=0.0, le=300.0)
+    cache_max_age_days: int = Field(default=30, ge=1, le=365)
+
+
 class LoggingConfig(BaseModel):
     """Logging configuration consumed by ``job_automation.logging``."""
 
@@ -101,6 +123,8 @@ class AppConfig(BaseSettings):
     matching: MatchingConfig = Field(default_factory=MatchingConfig)
     generation: GenerationConfig = Field(default_factory=GenerationConfig)
     ats: AtsConfig = Field(default_factory=AtsConfig)
+    critic: CriticConfig = Field(default_factory=CriticConfig)
+    web: WebConfig = Field(default_factory=WebConfig)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
 
     @classmethod
@@ -114,16 +138,17 @@ class AppConfig(BaseSettings):
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Add YAML source. Env vars take precedence over YAML."""
         yaml_path = Path("config.yaml")
-        yaml_source: PydanticBaseSettingsSource | None = None
-        if yaml_path.exists():
-            yaml_source = YamlConfigSettingsSource(settings_cls, yaml_file=yaml_path)
-        return (
+        sources: list[PydanticBaseSettingsSource] = [
             init_settings,
             env_settings,
             dotenv_settings,
             file_secret_settings,
-            yaml_source,  # type: ignore[arg-type, return-value]
-        )
+        ]
+        if yaml_path.exists():
+            sources.append(
+                YamlConfigSettingsSource(settings_cls, yaml_file=yaml_path)
+            )
+        return tuple(sources)
 
 
 @lru_cache(maxsize=1)

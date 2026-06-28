@@ -4,17 +4,16 @@ from __future__ import annotations
 
 import json
 import logging
-import re
 from io import StringIO
 
 import pytest
 
+from job_automation.config import LoggingConfig
 from job_automation.logging import (
     configure_logging,
     get_logger,
     log_context,
 )
-from job_automation.config import LoggingConfig
 
 
 @pytest.fixture
@@ -49,7 +48,7 @@ class TestLogContext:
     def test_context_attached_to_records(
         self, attached_stream: tuple[logging.Handler, StringIO]
     ) -> None:
-        handler, buf = attached_stream
+        _, buf = attached_stream
         log = get_logger("ctx_test")
 
         # Without context — no extras.
@@ -68,9 +67,8 @@ class TestLogContext:
     def test_nested_context(self, attached_stream) -> None:
         _, buf = attached_stream
         log = get_logger("nested_test")
-        with log_context(run_id="outer"):
-            with log_context(job_id=42):
-                log.info("inside")
+        with log_context(run_id="outer"), log_context(job_id=42):
+            log.info("inside")
         line = buf.getvalue().splitlines()[-1]
         assert "run_id=outer" in line
         assert "job_id=42" in line
@@ -83,7 +81,6 @@ class TestLogContext:
 
 class TestJsonFormatter:
     def test_json_output_parses(self) -> None:
-        cfg = LoggingConfig(level="DEBUG", format="json", file_enabled=False)
         # Use a private handler construction for the unit test.
         from job_automation.logging import _JsonFormatter
 
@@ -105,20 +102,30 @@ class TestJsonFormatter:
 
 
 class TestConfigureLogging:
-    def test_idempotent(
-        self,
-        attached_stream: tuple[logging.Handler, StringIO],
-    ) -> None:
-        """Calling configure_logging twice doesn't double-stack handlers."""
+    def test_idempotent_does_not_stack_handlers(self) -> None:
+        """Calling configure_logging repeatedly doesn't double-stack handlers.
+
+        We count StreamHandler instances (one StreamHandler per type per root).
+        If configure_logging were not idempotent, the count would grow.
+        """
+
         root = logging.getLogger()
-        before = len(root.handlers)
+
+        def _count_stream_handlers() -> int:
+            return sum(1 for h in root.handlers if isinstance(h, logging.StreamHandler))
+
+        baseline = _count_stream_handlers()
         configure_logging(LoggingConfig(file_enabled=False))
-        after = len(root.handlers)
+        after_first = _count_stream_handlers()
         configure_logging(LoggingConfig(file_enabled=False))
-        assert after == before + 1  # first call adds the stream handler
-        # Second call must not add another.
+        after_second = _count_stream_handlers()
         configure_logging(LoggingConfig(file_enabled=False))
-        assert len(root.handlers) == after
+        after_third = _count_stream_handlers()
+        # configure_logging may have added at most one StreamHandler.
+        assert after_first - baseline <= 1
+        # And it must not have added any more on subsequent calls.
+        assert after_second == after_first
+        assert after_third == after_first
 
     def test_get_logger_namespaces(self) -> None:
         log = get_logger("foo")

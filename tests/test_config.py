@@ -4,15 +4,15 @@ cache, and extra-field tolerance.
 
 from __future__ import annotations
 
-import os
+from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from job_automation.config import (
     AppConfig,
     AtsConfig,
     GenerationConfig,
-    LoggingConfig,
     MatchingConfig,
     PathsConfig,
     load_config,
@@ -69,17 +69,18 @@ class TestAppConfig:
         assert a is not b
 
     def test_bounds_enforced(self) -> None:
-        with pytest.raises(Exception):  # ValidationError from pydantic
+        with pytest.raises(ValidationError):
             MatchingConfig(minimum_match_score=200.0)
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             GenerationConfig(max_workers=0)
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             AtsConfig(target_score=-1)
 
     def test_nested_construction(self) -> None:
         cfg = AppConfig(
             paths=PathsConfig(
-                input_excel=__import__("pathlib").Path("/tmp/in.xlsx"),
+                input_excel=Path("custom/in.xlsx"),
             ),
         )
-        assert str(cfg.paths.input_excel) == "/tmp/in.xlsx"
+        assert cfg.paths.input_excel.name == "in.xlsx"
+        assert "custom" in str(cfg.paths.input_excel)

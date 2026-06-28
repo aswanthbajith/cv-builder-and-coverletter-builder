@@ -9,8 +9,9 @@ Public surface for M1:
   correlation-ID aware logging.
 - :func:`read_jobs_excel`, :func:`load_profile` — IO entry points.
 
-M2 will add: BaseEngine protocol, exception types, retry policy.
-M3 will add: Celery tasks, Pipeline orchestrator.
+M2 adds: 12-engine pipeline (:class:`Pipeline`), knowledge graph
+(``job_automation.knowledge``), LLM client protocol with Gemini + fake.
+M3 will add: Celery tasks.
 """
 
 from __future__ import annotations
@@ -18,14 +19,18 @@ from __future__ import annotations
 from job_automation.config import (
     AppConfig,
     AtsConfig,
+    CriticConfig,
     GenerationConfig,
     LoggingConfig,
     MatchingConfig,
     PathsConfig,
+    WebConfig,
     load_config,
     reset_config_cache,
 )
+from job_automation.engines import Pipeline
 from job_automation.io import load_profile, read_jobs_excel
+from job_automation.knowledge import load_knowledge_graph
 from job_automation.logging import (
     configure_logging,
     get_logger,
@@ -45,11 +50,12 @@ from job_automation.models import (
     Status,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "AppConfig",
     "AtsConfig",
+    "CriticConfig",
     "EducationEntry",
     "ExperienceEntry",
     "GenerationConfig",
@@ -61,14 +67,17 @@ __all__ = [
     "MatchResult",
     "MatchingConfig",
     "PathsConfig",
+    "Pipeline",
     "Profile",
     "ProjectEntry",
     "ResumeContent",
     "Status",
+    "WebConfig",
     "__version__",
     "configure_logging",
     "get_logger",
     "load_config",
+    "load_knowledge_graph",
     "load_profile",
     "log_context",
     "read_jobs_excel",

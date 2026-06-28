@@ -102,7 +102,7 @@ def sample_profile() -> Profile:
                 title="Working Student",
                 company="Acme",
                 location="Berlin",
-                period="2025 – Present",
+                period="2025 - Present",
                 description=["Shipped 5+ features in sprint cycles"],
                 technologies=["Python", "Git"],
             )
@@ -111,7 +111,7 @@ def sample_profile() -> Profile:
             EducationEntry(
                 degree="M.Sc. HPC",
                 institution="Test University",
-                period="2024 – Present",
+                period="2024 - Present",
             )
         ],
         projects=[
@@ -147,7 +147,7 @@ def profile_dir(tmp_path: Path, sample_profile: Profile) -> Path:
                 "experience": [e.model_dump() for e in sample_profile.experience],
                 "education": [e.model_dump() for e in sample_profile.education],
                 "projects": [p.model_dump() for p in sample_profile.projects],
-                "languages": [l.model_dump() for l in sample_profile.languages],
+                "languages": [lang.model_dump() for lang in sample_profile.languages],
                 "research_interests": sample_profile.research_interests,
                 "key_achievements": sample_profile.key_achievements,
             }

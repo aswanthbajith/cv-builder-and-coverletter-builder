@@ -22,6 +22,9 @@ class ExperienceEntry(BaseModel):
     period: str = ""
     description: list[str] = Field(default_factory=list)
     technologies: list[str] = Field(default_factory=list)
+    # M2 marker — matches atom ``source_ref`` (e.g. ``"work_no_border"``).
+    # Optional so legacy profiles without M2 wiring still validate.
+    source_ref_marker: str | None = None
 
 
 class ProjectEntry(BaseModel):

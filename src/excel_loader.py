@@ -105,14 +105,42 @@ class ExcelLoader:
         logger.info(f"Saved updated Excel to: {output_path}")
     
     def _create_hyperlinks(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Convert file paths to Excel hyperlinks."""
+        """Convert file paths to Excel hyperlinks using absolute forward-slash paths."""
+        from pathlib import Path, PureWindowsPath
+        import os
+        
         result = df.copy()
+        base_dir = Path(os.getcwd()).resolve()  # Project root as absolute
         
         for col in ['resume_pdf', 'resume_tex', 'cover_letter']:
-            if col in result.columns:
-                result[col] = result[col].apply(
-                    lambda x: f'=HYPERLINK("{x}","Open {col.replace("_", " ").title()}")' 
-                    if pd.notna(x) and str(x).strip() else ''
-                )
+            if col not in result.columns:
+                continue
+            
+            def make_link(x):
+                if pd.isna(x) or not str(x).strip() or str(x).strip().lower() == 'nan':
+                    return ''
+                
+                path_str = str(x).strip()
+                
+                # If already a HYPERLINK formula, return as-is
+                if path_str.startswith('=HYPERLINK'):
+                    return path_str
+                
+                # Resolve to absolute path
+                try:
+                    p = Path(path_str)
+                    if not p.is_absolute():
+                        p = base_dir / p
+                    abs_path = p.resolve()
+                    
+                    # Convert to forward slashes for Excel compatibility
+                    excel_path = str(abs_path).replace('\\', '/')
+                    
+                    label = col.replace('_', ' ').title()
+                    return f'=HYPERLINK("{excel_path}","Open {label}")'
+                except Exception:
+                    return ''
+            
+            result[col] = result[col].apply(make_link)
         
         return result

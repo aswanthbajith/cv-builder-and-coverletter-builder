@@ -7,16 +7,15 @@ matches what M2's engines will consume.
 
 from __future__ import annotations
 
+from datetime import UTC
+
 import pytest
 from pydantic import ValidationError
 
 from job_automation.models import (
-    EducationEntry,
     ExperienceEntry,
     GenerationResult,
     Job,
-    JobType,
-    LanguageEntry,
     MatchResult,
     Profile,
     ProjectEntry,
@@ -158,7 +157,7 @@ class TestMatchResult:
 
 class TestGenerationResult:
     def test_optional_paths(self, sample_job: Job) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         match = MatchResult(
             overall_score=80.0,
@@ -175,13 +174,13 @@ class TestGenerationResult:
         result = GenerationResult(
             job=sample_job,
             match=match,
-            generated_at=datetime.now(tz=timezone.utc),
+            generated_at=datetime.now(tz=UTC),
         )
         assert result.resume_pdf_path is None
         assert result.error is None
 
     def test_immutable(self, sample_job: Job) -> None:
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         match = MatchResult(
             overall_score=80.0,
@@ -196,7 +195,7 @@ class TestGenerationResult:
             status="proceed",
         )
         result = GenerationResult(
-            job=sample_job, match=match, generated_at=datetime.now(tz=timezone.utc)
+            job=sample_job, match=match, generated_at=datetime.now(tz=UTC)
         )
         with pytest.raises(ValidationError):
             result.error = "boom"  # type: ignore[misc]

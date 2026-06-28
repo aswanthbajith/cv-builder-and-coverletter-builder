@@ -18,9 +18,11 @@ from __future__ import annotations
 import contextvars
 import logging
 import sys
+from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import UTC
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 from job_automation.config import LoggingConfig
 
@@ -34,7 +36,7 @@ _log_context: contextvars.ContextVar[dict[str, Any]] = contextvars.ContextVar(
 class ContextFilter(logging.Filter):
     """Inject bound context (run_id, job_id, …) onto every log record."""
 
-    def filter(self, record: logging.LogRecord) -> bool:  # noqa: A003
+    def filter(self, record: logging.LogRecord) -> bool:
         for key, value in _log_context.get().items():
             # Don't clobber fields the caller already set explicitly.
             if not hasattr(record, key):
@@ -54,10 +56,10 @@ class _JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         import json
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         payload: dict[str, Any] = {
-            "ts": datetime.now(tz=timezone.utc).isoformat(),
+            "ts": datetime.now(tz=UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -141,13 +143,17 @@ def configure_logging(config: LoggingConfig | None = None) -> None:
         config = load_config().logging
 
     root = logging.getLogger()
-    root.setLevel(config.level)
+    level = getattr(config, "level", "INFO")
+    fmt = getattr(config, "format", "console")
+    file_enabled = getattr(config, "file_enabled", True)
+    colored = getattr(config, "colored", True)
+    root.setLevel(level)
 
     formatter: logging.Formatter
-    if config.format == "json":
+    if fmt == "json":
         formatter = _JsonFormatter()
     else:
-        formatter = _ColorFormatter(colored=config.colored)
+        formatter = _ColorFormatter(colored=colored)
 
     # Stream handler (stdout)
     stream_handler = _ensure_handler(root, logging.StreamHandler(sys.stdout))
@@ -155,7 +161,7 @@ def configure_logging(config: LoggingConfig | None = None) -> None:
     _ensure_context_filter(stream_handler)
 
     # File handler (optional, only on first configuration)
-    if config.file_enabled and not _CONFIGURED:
+    if file_enabled and not _CONFIGURED:
         log_path = _resolve_log_path()
         log_path.parent.mkdir(parents=True, exist_ok=True)
         file_handler = logging.FileHandler(log_path, encoding="utf-8")

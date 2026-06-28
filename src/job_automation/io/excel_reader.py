@@ -115,22 +115,77 @@ def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 def _row_to_job(row: dict[str, Any]) -> Job:
     """Convert a pandas row dict to a validated :class:`Job`.
 
-    Strips pandas NaN/NaT — these become ``None`` for optional fields, which
-    is what the strict Pydantic model expects.
+    Strips pandas NaN/NaT (these become ``None`` for optional fields, which
+    is what the strict Pydantic model expects). Also performs Excel-specific
+    coercions:
+
+    - ISO date strings → ``datetime.date``
+    - ``"Internship"`` → ``"internship"`` (literal expects lowercase)
+    - Comma-separated skill strings → ``list[str]``
     """
     cleaned: dict[str, Any] = {}
     for key, value in row.items():
-        if key not in _COLUMN_ALIASES and key not in {
-            "company", "job_title", "location", "job_description",
-            "required_skills", "preferred_qualifications", "application_url",
-            "posting_date", "deadline", "job_type", "source",
-            "match_score", "key_matching_skills", "missing_skills",
-            "duplicate", "duplicate_of", "deduplication_reason",
-        }:
-            # Pipeline-internal columns the model accepts via extra="ignore"
-            pass
         cleaned[key] = _strip_nan(value)
+
+    cleaned = _coerce_dates(cleaned)
+    cleaned = _coerce_job_type(cleaned)
+    cleaned = _coerce_skill_lists(cleaned)
+
     return Job.model_validate(cleaned)
+
+
+def _coerce_dates(row: dict[str, Any]) -> dict[str, Any]:
+    """Parse ISO date strings for ``posting_date`` and ``deadline``."""
+    from datetime import date, datetime
+
+    for key in ("posting_date", "deadline"):
+        value = row.get(key)
+        if value is None:
+            continue
+        if isinstance(value, date) and not isinstance(value, datetime):
+            continue
+        if isinstance(value, datetime):
+            row[key] = value.date()
+            continue
+        if isinstance(value, str):
+            try:
+                row[key] = date.fromisoformat(value)
+            except ValueError:
+                logger.warning(
+                    "invalid_date_string",
+                    extra={"key": key, "value": value},
+                )
+                row[key] = None
+    return row
+
+
+def _coerce_job_type(row: dict[str, Any]) -> dict[str, Any]:
+    """Normalize Excel ``Job_Type`` values to lowercase literals."""
+    raw = row.get("job_type")
+    if not isinstance(raw, str):
+        return row
+    normalized = raw.strip().lower()
+    valid = {"full-time", "part-time", "internship", "thesis", "contract", "unknown"}
+    if normalized in valid:
+        row["job_type"] = normalized
+    else:
+        # Unknown bucket — keep the data, mark as unknown, log for review.
+        logger.info("unknown_job_type", extra={"value": raw})
+        row["job_type"] = "unknown"
+    return row
+
+
+def _coerce_skill_lists(row: dict[str, Any]) -> dict[str, Any]:
+    """Split comma- or semicolon-separated skill strings into lists."""
+    for key in ("key_matching_skills", "missing_skills"):
+        value = row.get(key)
+        if value is None or isinstance(value, list):
+            continue
+        if isinstance(value, str):
+            # Comma is primary; semicolon tolerated.
+            parts = [p.strip() for p in value.replace(";", ",").split(",")]
+            row[key] = [p for p in parts if p]
+    return row
 
 
 def _strip_nan(value: Any) -> Any:

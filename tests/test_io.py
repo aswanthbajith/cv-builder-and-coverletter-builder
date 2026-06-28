@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
-import pandas as pd
 import pytest
+from pydantic import ValidationError
 
 from job_automation.config import PathsConfig
 from job_automation.io import load_profile, read_jobs_excel
 from job_automation.models import Job, Profile
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestLoadProfile:
@@ -24,7 +27,7 @@ class TestLoadProfile:
         paths = PathsConfig(profile_dir=tmp_path / "does_not_exist")
         # Profile model requires ``name`` — without a master_resume.json the
         # empty merged dict should fail validation.
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             load_profile(paths=paths)
 
 
@@ -51,7 +54,7 @@ class TestReadJobsExcel:
         from job_automation.io.excel_reader import _row_to_job
 
         # Missing company should fail validation.
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             _row_to_job({"job_title": "x", "location": "y", "job_description": "z"})
 
         # Valid row succeeds.
