@@ -6,6 +6,7 @@ touching the filesystem.
 """
 
 from job_automation.io.excel_reader import read_jobs_excel
+from job_automation.io.excel_writer import V2_COLUMNS, write_generation_results
 from job_automation.io.profile_loader import load_profile
 
-__all__ = ["load_profile", "read_jobs_excel"]
+__all__ = ["V2_COLUMNS", "load_profile", "read_jobs_excel", "write_generation_results"]

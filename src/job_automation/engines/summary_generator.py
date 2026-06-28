@@ -44,7 +44,10 @@ class SummaryGenerator:
             "a JSON object with one key, 'summary', whose value is a single "
             "string of at most 50 words. The summary must avoid AI tells "
             "('passionate', 'driven', 'leverage', 'delve'). Use only the "
-            "candidate's actual experience; do not invent metrics."
+            "candidate's actual experience; do not invent metrics. When a "
+            "company_profile is provided, weave in 1 short phrase that "
+            "aligns the candidate's experience with the company's focus "
+            "areas or terminology."
         )
         user = json.dumps(
             {
@@ -53,6 +56,9 @@ class SummaryGenerator:
                 "company": job.company,
                 "role_archetype": analysis.role_archetype if analysis else job.job_title,
                 "themes": analysis.themes if analysis else [],
+                "company_profile": (
+                    ctx.company_profile.model_dump() if ctx.company_profile else None
+                ),
                 "top_experiences": [
                     {
                         "title": a.experience.title,

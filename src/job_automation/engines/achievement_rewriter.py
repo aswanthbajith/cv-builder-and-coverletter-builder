@@ -104,7 +104,10 @@ class AchievementRewriter:
             "1-3 bullet sentences. Each bullet must lead with the action verb "
             "from the source atom and must use only metrics, technologies, "
             "and project names that appear in the source atom. Do not invent "
-            "any numbers, tools, or projects. Output strictly valid JSON."
+            "any numbers, tools, or projects. When a 'company_profile' is "
+            "provided, prefer the company's terminology over generic phrasing "
+            "as long as it doesn't conflict with the source atom's tech list. "
+            "Output strictly valid JSON."
         )
 
         rewritten: dict[str, list[str]] = {}
@@ -114,6 +117,9 @@ class AchievementRewriter:
                 "ats_keywords_top10": [
                     {"term": k.term, "weight": k.weight} for k in ctx.ats_keywords[:10]
                 ],
+                "company_profile": (
+                    ctx.company_profile.model_dump() if ctx.company_profile else None
+                ),
                 "source_ref": source_ref,
                 "group_label": group_label,
                 "atoms": [

@@ -214,6 +214,13 @@ class Pipeline:
     def _finalize(self, ctx: PipelineContext) -> GenerationResult:
         """Build the public :class:`GenerationResult` from the final context."""
         match = self._derive_match_result(ctx)
+        # C3 wiring: elevate a RecruiterReviewer "reject" verdict into
+        # ctx.errors so it surfaces in GenerationResult.error (and downstream
+        # in the Excel output). Other verdicts (review / interview) are
+        # intentionally NOT added — they are informational.
+        if ctx.recruiter_review is not None and ctx.recruiter_review.verdict == "reject":
+            rationale = (ctx.recruiter_review.rationale or "").strip()[:200]
+            ctx.errors["recruiter_rejected"] = rationale or "no_rationale"
         # Pick the most informative error message (shortest non-empty wins).
         error = self._summarize_errors(ctx)
         return GenerationResult(

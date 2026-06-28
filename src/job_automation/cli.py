@@ -136,6 +136,7 @@ def _run_v2(args: argparse.Namespace, cfg: object) -> int:
     llm = GeminiClient()  # reads GEMINI_API_KEY from env
     pipeline = build_default_pipeline(llm)
 
+    results: list = []
     exit_code = 0
     for job in jobs:
         try:
@@ -148,6 +149,7 @@ def _run_v2(args: argparse.Namespace, cfg: object) -> int:
             print(f"error: {job.company} — {exc}")
             exit_code = 1
             continue
+        results.append(result)
         logger.info(
             "v2_pipeline_job_done",
             extra={
@@ -160,6 +162,23 @@ def _run_v2(args: argparse.Namespace, cfg: object) -> int:
         )
         if result.error:
             print(f"warn: {job.company} — {result.error}")
+
+    # C5: write per-job results to output/Job_Matching_Updated.xlsx.
+    if results:
+        try:
+            output_path = getattr(cfg.paths, "output_excel", None) or Path(
+                "output/Job_Matching_Updated.xlsx"
+            )
+            from job_automation.io import write_generation_results
+
+            written = write_generation_results(results, output_path)
+            logger.info(
+                "v2_excel_written",
+                extra={"path": str(output_path), "rows": written},
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("v2_excel_write_failed", extra={"error": str(exc)})
+            print(f"warn: excel write failed — {exc}")
     return exit_code
 
 

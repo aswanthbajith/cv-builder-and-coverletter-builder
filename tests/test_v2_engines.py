@@ -273,6 +273,12 @@ async def test_achievement_rewriter_and_summary_generator_use_fake_llm(sample_jo
     ctx = PipelineContext(run_id="5", job=sample_job, graph=sample_graph, profile=sample_profile)
     ctx.job_analysis = JobAnalysis(role_archetype="HPC Engineer", themes=["MPI"], must_haves=["CUDA"], nice_to_haves=["Linux"], seniority="mid")
     ctx.ats_keywords = [ATSKeyword(term="Python", weight=1.0), ATSKeyword(term="MPI", weight=1.0)]
+    ctx.company_profile = CompanyProfile(
+        company=sample_job.company,
+        focus_areas=["GPU simulation", "MPI workflows"],
+        technologies=["CUDA", "Python"],
+        terminology=["throughput", "vectorization"],
+    )
     ctx.selected_experiences = [
         SimpleNamespace(
             experience=AtomicExperience(
@@ -302,6 +308,134 @@ async def test_achievement_rewriter_and_summary_generator_use_fake_llm(sample_jo
 
     assert ctx.rewritten_bullets["acme_hpc"]
     assert ctx.summary is not None
+
+    # C2: company_profile is propagated to both engines' LLM payloads.
+    # Distinguish calls by unique payload keys: rewriter uses "source_ref",
+    # summary uses "candidate_name".
+    json_calls = [c for c in llm.call_log if c["kind"] == "json"]
+    rewriter_call = next(c for c in json_calls if "source_ref" in c["user"])
+    summary_call = next(c for c in json_calls if "candidate_name" in c["user"])
+    import json as _json
+
+    rewriter_payload = _json.loads(rewriter_call["user"])
+    summary_payload = _json.loads(summary_call["user"])
+    assert rewriter_payload["company_profile"]["focus_areas"] == ["GPU simulation", "MPI workflows"]
+    assert summary_payload["company_profile"]["terminology"] == ["throughput", "vectorization"]
+
+
+@pytest.mark.asyncio
+async def test_company_profile_absent_in_prompts_when_empty(sample_job: Job, sample_profile: Profile, sample_graph: KnowledgeGraph) -> None:
+    """When company_profile is None, the engine must serialize None — not skip the field."""
+    ctx = PipelineContext(run_id="5b", job=sample_job, graph=sample_graph, profile=sample_profile)
+    ctx.job_analysis = JobAnalysis(role_archetype="HPC Engineer", themes=[], must_haves=[], nice_to_haves=[], seniority="junior")
+    ctx.ats_keywords = []
+    # company_profile intentionally None
+
+    llm = FakeLLMClient()
+    llm.set_json_response("summary_generator", "summary", {"summary": "ok"})
+
+    await SummaryGenerator(llm).run(ctx)
+
+    summary_call = next(c for c in llm.call_log if c["kind"] == "json")
+    import json as _json
+
+    payload = _json.loads(summary_call["user"])
+    assert "company_profile" in payload
+    assert payload["company_profile"] is None
+
+
+# ----- C3: RecruiterReviewer verdict wiring -----------------------------------
+
+def _make_recruiter_pipeline(sample_job: Job, sample_profile: Profile, sample_graph: KnowledgeGraph, *, verdict: str) -> Pipeline:
+    """Build a Pipeline where only RecruiterReviewer is real; others inject state.
+
+    The NoopEngines set the minimum ctx fields RecruiterReviewer needs
+    (job_analysis, draft_resume). The recruiter reviewer's verdict is
+    forced via the FakeLLMClient response.
+    """
+    from job_automation.engines.orchestrator import Pipeline
+
+    def make_stub(name: str, mutator=None):
+        class _Stub:
+            pass
+
+        s = _Stub()
+        s.name = name
+        s.timeout_s = 1.0
+        s.requires = frozenset()
+        s.produces = frozenset()
+
+        async def _run(ctx: PipelineContext) -> PipelineContext:
+            if mutator:
+                mutator(ctx)
+            return ctx
+
+        s.run = _run
+        return s
+
+    def inject_analysis(ctx: PipelineContext) -> None:
+        ctx.job_analysis = JobAnalysis(role_archetype="HPC", themes=["MPI"], must_haves=["CUDA"], nice_to_haves=["Linux"], seniority="mid")
+
+    def inject_draft(ctx: PipelineContext) -> None:
+        ctx.draft_resume = ResumeContent(
+            name="Test",
+            contact={"email": "a@b.com"},
+            summary="HPC summary",
+            skills=["Python, MPI"],
+            experience=[{"title": "Engineer", "company": "Acme", "description": ["Did HPC."]}],
+            education=[{"degree": "M.Sc.", "institution": "TU", "period": "2024"}],
+            projects=[],
+            languages=[],
+            research_interests=[],
+        )
+
+    llm = FakeLLMClient()
+    llm.set_json_response(
+        "recruiter_reviewer",
+        "verdict",
+        {
+            "verdict": verdict,
+            "red_flags": ["gap_in_resume"],
+            "followups": ["Tell me about your last project."],
+            "rationale": "Concerning gap between 2023 and 2024.",
+        },
+    )
+
+    return Pipeline(
+        job_analyzer=make_stub("job_analyzer", inject_analysis),
+        company_researcher=make_stub("company_researcher"),
+        keyword_extractor=make_stub("keyword_extractor"),
+        skill_gap=make_stub("skill_gap"),
+        experience_selector=make_stub("experience_selector"),
+        achievement_rewriter=make_stub("achievement_rewriter"),
+        project_selector=make_stub("project_selector"),
+        summary_generator=make_stub("summary_generator", inject_draft),
+        resume_critic=make_stub("resume_critic"),
+        ats_validator=make_stub("ats_validator"),
+        recruiter_reviewer=RecruiterReviewer(llm),
+        latex_generator=make_stub("latex_generator"),
+    )
+
+
+def test_pipeline_recruiter_reject_surfaces_in_error(sample_job: Job, sample_profile: Profile, sample_graph: KnowledgeGraph) -> None:
+    """C3: a 'reject' verdict from RecruiterReviewer must surface in GenerationResult.error."""
+    pipeline = _make_recruiter_pipeline(sample_job, sample_profile, sample_graph, verdict="reject")
+    result = pipeline.process_sync(sample_job, sample_graph, sample_profile)
+    assert "recruiter_rejected" in (result.error or "")
+
+
+def test_pipeline_recruiter_interview_does_not_error(sample_job: Job, sample_profile: Profile, sample_graph: KnowledgeGraph) -> None:
+    """C3: 'interview' verdict is informational — must NOT appear in errors."""
+    pipeline = _make_recruiter_pipeline(sample_job, sample_profile, sample_graph, verdict="interview")
+    result = pipeline.process_sync(sample_job, sample_graph, sample_profile)
+    assert "recruiter_rejected" not in (result.error or "")
+
+
+def test_pipeline_recruiter_review_does_not_error(sample_job: Job, sample_profile: Profile, sample_graph: KnowledgeGraph) -> None:
+    """C3: 'review' verdict is informational — must NOT appear in errors."""
+    pipeline = _make_recruiter_pipeline(sample_job, sample_profile, sample_graph, verdict="review")
+    result = pipeline.process_sync(sample_job, sample_graph, sample_profile)
+    assert "recruiter_rejected" not in (result.error or "")
 
 
 @pytest.mark.asyncio
@@ -333,6 +467,90 @@ async def test_ats_validator_resume_critic_and_recruiter_reviewer(sample_job: Jo
     await reviewer.run(ctx)
     assert reviewer.name in {"recruiter_reviewer"}
     assert ctx.recruiter_review is not None
+
+
+@pytest.mark.asyncio
+async def test_latex_generator_renders_coursework_and_highlights(tmp_path: Path, sample_job: Job, sample_profile: Profile, sample_graph: KnowledgeGraph) -> None:
+    """C4: LaTeXGenerator must render education with `relevant_coursework` and `highlights`."""
+    from job_automation.engines.latex_generator import _render
+
+    ctx = PipelineContext(run_id="c4", job=sample_job, graph=sample_graph, profile=sample_profile)
+    ctx.draft_resume = ResumeContent(
+        name="Test Candidate",
+        contact={"email": "a@b.com"},
+        summary="HPC summary",
+        skills=["Python, MPI"],
+        experience=[],
+        education=[
+            {
+                "degree": "M.Sc. HPC",
+                "institution": "TU Berlin",
+                "period": "2024-present",
+                "grade": "1.3",
+                "relevant_coursework": ["Parallel Computing", "Numerical Methods"],
+                "highlights": ["Dean's List 2023", "Top-1 cohort"],
+            },
+            {
+                "degree": "B.Sc. CS",
+                "institution": "TU Munich",
+                "period": "2020-2024",
+                "grade": "1.5",
+                # No coursework / highlights — must still render cleanly.
+            },
+        ],
+        projects=[],
+        languages=[{"language": "English", "proficiency": "Professional"}],
+        research_interests=["HPC"],
+    )
+
+    rendered = _render(ctx)
+    assert "Relevant coursework:" in rendered
+    assert "Parallel Computing" in rendered
+    assert "Highlights:" in rendered
+    assert "Dean's List 2023" in rendered
+
+
+@pytest.mark.asyncio
+async def test_recruiter_reviewer_fallback_on_llm_error(sample_job: Job, sample_profile: Profile, sample_graph: KnowledgeGraph) -> None:
+    """C4: when the LLM call raises, the reviewer must fall back to verdict='review'."""
+    from job_automation.engines.recruiter_reviewer import RecruiterReviewer
+
+    ctx = PipelineContext(run_id="c4b", job=sample_job, graph=sample_graph, profile=sample_profile)
+    ctx.job_analysis = JobAnalysis(role_archetype="HPC", themes=["MPI"], must_haves=["CUDA"], nice_to_haves=["Linux"], seniority="mid")
+    ctx.draft_resume = ResumeContent(
+        name="Test",
+        contact={"email": "a@b.com"},
+        summary="HPC summary",
+        skills=["Python, MPI"],
+        experience=[{"title": "Engineer", "company": "Acme", "description": ["Did HPC."]}],
+        education=[{"degree": "M.Sc.", "institution": "TU", "period": "2024"}],
+        projects=[],
+        languages=[],
+        research_interests=[],
+    )
+
+    reviewer = RecruiterReviewer(RaisingLLM())
+    await reviewer.run(ctx)
+
+    assert ctx.recruiter_review is not None
+    assert ctx.recruiter_review.verdict == "review"
+    assert "recruiter_reviewer" in ctx.errors
+
+
+@pytest.mark.asyncio
+async def test_recruiter_reviewer_rejects_when_no_draft(sample_job: Job, sample_profile: Profile, sample_graph: KnowledgeGraph) -> None:
+    """C4: when no draft_resume, the reviewer short-circuits to verdict='reject'."""
+    from job_automation.engines.recruiter_reviewer import RecruiterReviewer
+
+    ctx = PipelineContext(run_id="c4c", job=sample_job, graph=sample_graph, profile=sample_profile)
+    # draft_resume intentionally None
+
+    reviewer = RecruiterReviewer(FakeLLMClient())
+    await reviewer.run(ctx)
+
+    assert ctx.recruiter_review is not None
+    assert ctx.recruiter_review.verdict == "reject"
+    assert ctx.errors["recruiter_reviewer"] == "no_draft_resume"
 
 
 @pytest.mark.asyncio
